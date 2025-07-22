@@ -19,6 +19,7 @@ export default function Home() {
         </div>
       </header>
 
+
       {/* Hero Section */}
       <section className="py-24">
         <div className="container mx-auto px-6 text-center">
