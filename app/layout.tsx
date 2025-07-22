@@ -1,11 +1,12 @@
-import './globals.css'
+import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import './globals.css'
 
 const inter = Inter({ subsets: ['latin'] })
 
-export const metadata = {
-  title: 'TruePaper',
-  description: 'Blockchain-powered document verification',
+export const metadata: Metadata = {
+  title: 'TruePaper - Blockchain Certificates',
+  description: 'Issue tamper-proof digital certificates that can be verified instantly, anywhere in the world.',
 }
 
 export default function RootLayout({
