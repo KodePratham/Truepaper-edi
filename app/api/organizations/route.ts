@@ -1,20 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// In-memory storage (will reset on each deployment)
-let organizations = [
-  {
-    id: '1753243673939',
-    organizationName: 'Test Org',
-    password: '123456',
-    createdAt: '2025-07-23T04:07:53.939Z'
-  },
-  {
-    id: '1753244560331',
-    organizationName: 'Nayan',
-    password: '123456',
-    createdAt: '2025-07-23T04:22:40.331Z'
-  }
-]
+import { readOrganizations, addOrganization } from '@/lib/organizations'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -30,31 +15,23 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if organization name already exists
-    const existingOrg = organizations.find(
-      (org: any) => org.organizationName === organizationName
-    )
+    const newOrganization = addOrganization(organizationName, password)
 
-    if (existingOrg) {
+    return NextResponse.json({
+      success: true,
+      id: newOrganization.id,
+      message: 'Organization created successfully'
+    })
+  } catch (error) {
+    console.error('Error saving organization:', error)
+
+    if (error instanceof Error && error.message === 'Organization name already exists') {
       return NextResponse.json(
         { error: 'Organization name already exists' },
         { status: 409 }
       )
     }
 
-    // Add new organization
-    const newOrganization = {
-      id: Date.now().toString(),
-      organizationName,
-      password,
-      createdAt: new Date().toISOString()
-    }
-
-    organizations.push(newOrganization)
-
-    return NextResponse.json({ success: true, id: newOrganization.id })
-  } catch (error) {
-    console.error('Error saving organization:', error)
     return NextResponse.json(
       { error: 'Failed to save organization' },
       { status: 500 }
@@ -64,7 +41,10 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    return NextResponse.json(organizations)
+    const organizations = readOrganizations()
+    // Remove passwords from response
+    const safeOrganizations = organizations.map(({ password, ...org }) => org)
+    return NextResponse.json(safeOrganizations)
   } catch (error) {
     console.error('Error reading organizations:', error)
     return NextResponse.json(

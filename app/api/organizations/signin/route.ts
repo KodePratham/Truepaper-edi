@@ -1,20 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// Import the same organizations array (in a real app, you'd use a database)
-let organizations = [
-  {
-    "id": "1753243673939",
-    "organizationName": "Test Org",
-    "password": "123456",
-    "createdAt": "2025-07-23T04:07:53.939Z"
-  },
-  {
-    "id": "1753244560331",
-    "organizationName": "Nayan",
-    "password": "123456",
-    "createdAt": "2025-07-23T04:22:40.331Z"
-  }
-]
+import { findOrganization } from '@/lib/organizations'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -31,9 +16,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Find organization with matching credentials
-    const organization = organizations.find(
-      (org: any) => org.organizationName === organizationName && org.password === password
-    )
+    const organization = findOrganization(organizationName, password)
 
     if (!organization) {
       return NextResponse.json(
