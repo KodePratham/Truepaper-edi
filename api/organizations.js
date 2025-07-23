@@ -1,5 +1,4 @@
-// This is a serverless function for Vercel/Netlify deployment
-// For GitHub Pages, you'll need to use a different hosting solution
+// This is a serverless function for Vercel deployment
 
 let organizations = [
   {
@@ -16,7 +15,7 @@ let organizations = [
   }
 ];
 
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
@@ -47,4 +46,4 @@ export default function handler(req, res) {
   } else {
     res.status(405).json({ error: 'Method not allowed' });
   }
-}
+};
