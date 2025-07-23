@@ -12,9 +12,11 @@ export default function Home() {
               <Shield className="w-6 h-6 text-primary-600" />
               <span className="text-xl font-semibold text-black">TruePaper</span>
             </div>
-            <button className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
-              Get Started
-            </button>
+            <Link href="/test">
+              <button className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                Test
+              </button>
+            </Link>
           </div>
         </div>
       </header>
@@ -28,9 +30,11 @@ export default function Home() {
             Issue tamper-proof digital certificates that can be verified instantly, anywhere in the world.
           </p>
           <div className="space-x-4">
-            <button className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-8 rounded-lg transition duration-200">
-              Start Free Trial
-            </button>
+            <Link href="/test">
+              <button className="bg-primary-600 hover:bg-primary-700 text-white font-medium py-3 px-8 rounded-lg transition duration-200">
+                Test
+              </button>
+            </Link>
             <button className="border border-primary-600 text-primary-600 hover:bg-primary-50 font-medium py-3 px-8 rounded-lg transition duration-200">
               Learn More
             </button>
@@ -86,9 +90,11 @@ export default function Home() {
                   <span className="text-gray-700">Email support</span>
                 </li>
               </ul>
-              <button className="w-full border border-primary-600 text-primary-600 hover:bg-primary-50 font-medium py-2 px-4 rounded-lg transition duration-200">
-                Start Trial
-              </button>
+              <Link href="/test">
+                <button className="w-full border border-primary-600 text-primary-600 hover:bg-primary-50 font-medium py-2 px-4 rounded-lg transition duration-200">
+                  Test
+                </button>
+              </Link>
             </div>
 
             <div className="border-2 border-primary-600 rounded-lg p-8 text-center bg-white">
@@ -110,9 +116,11 @@ export default function Home() {
                   <span className="text-gray-700">Priority support</span>
                 </li>
               </ul>
-              <button className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
-                Start Trial
-              </button>
+              <Link href="/test">
+                <button className="w-full bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition duration-200">
+                  Test
+                </button>
+              </Link>
             </div>
           </div>
         </div>
@@ -123,9 +131,11 @@ export default function Home() {
         <div className="container mx-auto px-6 text-center">
           <h2 className="text-3xl font-bold text-white mb-4">Ready to get started?</h2>
           <p className="text-primary-100 mb-8">Start issuing secure certificates today</p>
-          <button className="bg-white text-primary-600 hover:bg-gray-100 font-medium py-3 px-8 rounded-lg transition duration-200">
-            Start Free Trial
-          </button>
+          <Link href="/test">
+            <button className="bg-white text-primary-600 hover:bg-gray-100 font-medium py-3 px-8 rounded-lg transition duration-200">
+              Test
+            </button>
+          </Link>
         </div>
       </section>
 
