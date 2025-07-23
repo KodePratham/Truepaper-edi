@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
 
-const dataFile = path.join(process.cwd(), 'public', 'organizations.json')
+// In-memory storage (will reset on each deployment)
+let organizations = [
+  {
+    id: '1753243673939',
+    organizationName: 'Test Org',
+    password: '123456',
+    createdAt: '2025-07-23T04:07:53.939Z'
+  },
+  {
+    id: '1753244560331',
+    organizationName: 'Nayan',
+    password: '123456',
+    createdAt: '2025-07-23T04:22:40.331Z'
+  }
+]
 
 export async function POST(request: NextRequest) {
   try {
@@ -13,13 +25,6 @@ export async function POST(request: NextRequest) {
         { error: 'Organization name and password are required' },
         { status: 400 }
       )
-    }
-
-    // Read existing data or create empty array
-    let organizations = []
-    if (fs.existsSync(dataFile)) {
-      const fileContent = fs.readFileSync(dataFile, 'utf8')
-      organizations = JSON.parse(fileContent)
     }
 
     // Check if organization name already exists
@@ -44,15 +49,6 @@ export async function POST(request: NextRequest) {
 
     organizations.push(newOrganization)
 
-    // Ensure public directory exists
-    const publicDir = path.join(process.cwd(), 'public')
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true })
-    }
-
-    // Write back to file
-    fs.writeFileSync(dataFile, JSON.stringify(organizations, null, 2))
-
     return NextResponse.json({ success: true, id: newOrganization.id })
   } catch (error) {
     console.error('Error saving organization:', error)
@@ -65,13 +61,6 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    if (!fs.existsSync(dataFile)) {
-      return NextResponse.json([])
-    }
-
-    const fileContent = fs.readFileSync(dataFile, 'utf8')
-    const organizations = JSON.parse(fileContent)
-    
     return NextResponse.json(organizations)
   } catch (error) {
     console.error('Error reading organizations:', error)

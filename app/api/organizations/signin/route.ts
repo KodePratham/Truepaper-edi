@@ -1,8 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
 
-const dataFile = path.join(process.cwd(), 'public', 'organizations.json')
+// Import the same organizations array (in a real app, you'd use a database)
+let organizations = [
+  {
+    "id": "1753243673939",
+    "organizationName": "Test Org",
+    "password": "123456",
+    "createdAt": "2025-07-23T04:07:53.939Z"
+  },
+  {
+    "id": "1753244560331",
+    "organizationName": "Nayan",
+    "password": "123456",
+    "createdAt": "2025-07-23T04:22:40.331Z"
+  }
+]
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,17 +26,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       )
     }
-
-    // Read existing organizations
-    if (!fs.existsSync(dataFile)) {
-      return NextResponse.json(
-        { error: 'No organizations found' },
-        { status: 404 }
-      )
-    }
-
-    const fileContent = fs.readFileSync(dataFile, 'utf8')
-    const organizations = JSON.parse(fileContent)
 
     // Find organization with matching credentials
     const organization = organizations.find(
