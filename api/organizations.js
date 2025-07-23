@@ -23,13 +23,26 @@ export default function handler(req, res) {
   if (req.method === 'GET') {
     res.status(200).json(organizations);
   } else if (req.method === 'POST') {
+    const { organizationName, password } = req.body;
+    
+    if (!organizationName || !password) {
+      return res.status(400).json({ error: 'Organization name and password are required' });
+    }
+
+    // Check if organization name already exists
+    const existingOrg = organizations.find(org => org.organizationName === organizationName);
+    if (existingOrg) {
+      return res.status(409).json({ error: 'Organization name already exists' });
+    }
+
     const newOrg = {
       id: Date.now().toString(),
-      ...req.body,
+      organizationName,
+      password,
       createdAt: new Date().toISOString()
     };
     organizations.push(newOrg);
-    res.status(201).json(newOrg);
+    res.status(201).json({ success: true, id: newOrg.id });
   } else if (req.method === 'PUT') {
     const { id } = req.query;
     const index = organizations.findIndex(org => org.id === id);
