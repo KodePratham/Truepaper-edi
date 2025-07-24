@@ -3,6 +3,7 @@
 import { Shield, Building, Lock, User } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 
 export default function TestPage() {
   const [isSignIn, setIsSignIn] = useState(true)
@@ -13,6 +14,7 @@ export default function TestPage() {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
+  const router = useRouter()
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -51,6 +53,14 @@ export default function TestPage() {
       if (response.ok) {
         setMessage(isSignIn ? 'Sign in successful!' : 'Organization created successfully!')
         setFormData({ organizationName: '', password: '', confirmPassword: '' })
+        
+        // Store organization data and redirect to dashboard
+        if (data.organization) {
+          localStorage.setItem('organization', JSON.stringify(data.organization))
+          setTimeout(() => {
+            router.push('/dashboard')
+          }, 1000)
+        }
       } else {
         setMessage(data.error || `Failed to ${isSignIn ? 'sign in' : 'create organization'}`)
       }
