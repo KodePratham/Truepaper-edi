@@ -12,6 +12,7 @@ export default function TestPage() {
     password: '',
     confirmPassword: ''
   })
+
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState('')
   const router = useRouter()
