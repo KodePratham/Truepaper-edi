@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
-
-const dataFile = path.join(process.cwd(), 'public', 'organizations.json')
+import { supabase } from '../../../lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,17 +12,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Read existing data or create empty array
-    let organizations = []
-    if (fs.existsSync(dataFile)) {
-      const fileContent = fs.readFileSync(dataFile, 'utf8')
-      organizations = JSON.parse(fileContent)
-    }
-
     // Check if organization name already exists
-    const existingOrg = organizations.find(
-      (org: any) => org.organizationName === organizationName
-    )
+    const { data: existingOrg, error: checkError } = await supabase
+      .from('organizations')
+      .select('id')
+      .eq('organization_name', organizationName)
+      .maybeSingle()
+
+    if (checkError) {
+      console.error('Error checking existing organization:', checkError)
+      return NextResponse.json(
+        { error: 'Failed to check organization existence' },
+        { status: 500 }
+      )
+    }
 
     if (existingOrg) {
       return NextResponse.json(
@@ -34,26 +34,31 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Add new organization
-    const newOrganization = {
-      id: Date.now().toString(),
-      organizationName,
-      password,
-      createdAt: new Date().toISOString()
+    // Insert new organization
+    const { data, error } = await supabase
+      .from('organizations')
+      .insert([
+        {
+          organization_name: organizationName,
+          password: password
+        }
+      ])
+      .select('id, organization_name, created_at')
+      .single()
+
+    if (error) {
+      console.error('Error inserting organization:', error)
+      return NextResponse.json(
+        { error: 'Failed to create organization' },
+        { status: 500 }
+      )
     }
 
-    organizations.push(newOrganization)
-
-    // Ensure public directory exists
-    const publicDir = path.join(process.cwd(), 'public')
-    if (!fs.existsSync(publicDir)) {
-      fs.mkdirSync(publicDir, { recursive: true })
-    }
-
-    // Write back to file
-    fs.writeFileSync(dataFile, JSON.stringify(organizations, null, 2))
-
-    return NextResponse.json({ success: true, id: newOrganization.id })
+    return NextResponse.json({
+      success: true,
+      organization: data,
+      message: 'Organization created successfully'
+    })
   } catch (error) {
     console.error('Error saving organization:', error)
     return NextResponse.json(
@@ -65,14 +70,20 @@ export async function POST(request: NextRequest) {
 
 export async function GET() {
   try {
-    if (!fs.existsSync(dataFile)) {
-      return NextResponse.json([])
+    const { data: organizations, error } = await supabase
+      .from('organizations')
+      .select('id, organization_name, created_at')
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching organizations:', error)
+      return NextResponse.json(
+        { error: 'Failed to fetch organizations' },
+        { status: 500 }
+      )
     }
 
-    const fileContent = fs.readFileSync(dataFile, 'utf8')
-    const organizations = JSON.parse(fileContent)
-    
-    return NextResponse.json(organizations)
+    return NextResponse.json(organizations || [])
   } catch (error) {
     console.error('Error reading organizations:', error)
     return NextResponse.json(

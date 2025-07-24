@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import fs from 'fs'
-import path from 'path'
-
-const dataFile = path.join(process.cwd(), 'public', 'organizations.json')
+import { supabase } from '../../../../lib/supabase'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,21 +12,21 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Read existing organizations
-    if (!fs.existsSync(dataFile)) {
+    // Find organization with matching credentials
+    const { data: organization, error } = await supabase
+      .from('organizations')
+      .select('id, organization_name, created_at')
+      .eq('organization_name', organizationName)
+      .eq('password', password)
+      .maybeSingle()
+
+    if (error) {
+      console.error('Error finding organization:', error)
       return NextResponse.json(
-        { error: 'No organizations found' },
-        { status: 404 }
+        { error: 'Failed to authenticate' },
+        { status: 500 }
       )
     }
-
-    const fileContent = fs.readFileSync(dataFile, 'utf8')
-    const organizations = JSON.parse(fileContent)
-
-    // Find organization with matching credentials
-    const organization = organizations.find(
-      (org: any) => org.organizationName === organizationName && org.password === password
-    )
 
     if (!organization) {
       return NextResponse.json(
@@ -38,11 +35,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Return success without password
-    const { password: _, ...orgData } = organization
     return NextResponse.json({ 
       success: true, 
-      organization: orgData,
+      organization: organization,
       message: 'Sign in successful'
     })
 
