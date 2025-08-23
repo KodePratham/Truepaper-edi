@@ -8,19 +8,17 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
-        },
+        background: "#000",
+        foreground: "#fff",
+        accent: "#fff",
+        muted: "#222",
+        border: "#222",
+      },
+      fontFamily: {
+        sans: ['Inter', 'Segoe UI', 'Helvetica Neue', 'Arial', 'sans-serif'],
       },
     },
   },
   plugins: [],
 }
+  

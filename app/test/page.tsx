@@ -79,17 +79,17 @@ export default function TestPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-black text-white font-sans">
       {/* Header */}
-      <header className="bg-white border-b border-gray-200">
+      <header className="bg-black border-b border-border">
         <div className="container mx-auto px-6 py-4">
           <div className="flex justify-between items-center">
             <Link href="/" className="flex items-center space-x-2">
-              <Shield className="w-6 h-6 text-primary-600" />
-              <span className="text-xl font-semibold text-black">TruePaper</span>
+              <Shield className="w-6 h-6 text-white" />
+              <span className="text-xl font-semibold tracking-tight">TruePaper</span>
             </Link>
             <Link href="/">
-              <button className="text-gray-600 hover:text-gray-800 font-medium py-2 px-4 transition duration-200">
+              <button className="text-gray-300 hover:text-white font-medium py-2 px-4 transition duration-200">
                 Back to Home
               </button>
             </Link>
@@ -99,29 +99,29 @@ export default function TestPage() {
 
       {/* Main Content */}
       <div className="flex items-center justify-center min-h-screen py-12">
-        <div className="bg-white rounded-lg shadow-lg p-8 w-full max-w-md">
+        <div className="bg-muted rounded-lg shadow-lg p-8 w-full max-w-md border border-border">
           <div className="text-center mb-8">
-            <Building className="w-12 h-12 text-primary-600 mx-auto mb-4" />
-            <h1 className="text-2xl font-bold text-black mb-2">
-              {isSignIn ? 'Sign In' : 'Create Organization'}
+            <Building className="w-12 h-12 text-white mx-auto mb-4" />
+            <h1 className="text-2xl font-bold mb-2">
+              {isSignIn ? 'Sign In to BSC Portal' : 'Join Blockchain Network'}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-gray-300">
               {isSignIn 
-                ? 'Sign in to your organization account' 
-                : 'Set up your organization to start issuing certificates'
+                ? 'Access your organization\'s blockchain certificate portal' 
+                : 'Register your organization to start minting certificates on BSC'
               }
             </p>
           </div>
 
           {/* Toggle Buttons */}
-          <div className="flex mb-6 bg-gray-100 rounded-lg p-1">
+          <div className="flex mb-6 bg-black rounded-lg p-1 border border-border">
             <button
               type="button"
               onClick={() => setIsSignIn(true)}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition duration-200 ${
                 isSignIn 
-                  ? 'bg-white text-primary-600 shadow-sm' 
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white text-black shadow-sm' 
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
               Sign In
@@ -131,8 +131,8 @@ export default function TestPage() {
               onClick={() => setIsSignIn(false)}
               className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition duration-200 ${
                 !isSignIn 
-                  ? 'bg-white text-primary-600 shadow-sm' 
-                  : 'text-gray-500 hover:text-gray-700'
+                  ? 'bg-white text-black shadow-sm' 
+                  : 'text-gray-400 hover:text-white'
               }`}
             >
               Sign Up
@@ -142,17 +142,17 @@ export default function TestPage() {
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1">
                 Organization Name
               </label>
               <div className="relative">
-                <User className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <User className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
                 <input
                   type="text"
                   name="organizationName"
                   value={formData.organizationName}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-black text-white focus:ring-2 focus:ring-white focus:border-white"
                   placeholder="Enter organization name"
                   required
                 />
@@ -160,17 +160,17 @@ export default function TestPage() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-gray-400 mb-1">
                 Password
               </label>
               <div className="relative">
-                <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                <Lock className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
                 <input
                   type="password"
                   name="password"
                   value={formData.password}
                   onChange={handleInputChange}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                  className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-black text-white focus:ring-2 focus:ring-white focus:border-white"
                   placeholder="Enter password"
                   required
                 />
@@ -179,17 +179,17 @@ export default function TestPage() {
 
             {!isSignIn && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-gray-400 mb-1">
                   Confirm Password
                 </label>
                 <div className="relative">
-                  <Lock className="w-5 h-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                  <Lock className="w-5 h-5 text-gray-500 absolute left-3 top-1/2 transform -translate-y-1/2" />
                   <input
                     type="password"
                     name="confirmPassword"
                     value={formData.confirmPassword}
                     onChange={handleInputChange}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+                    className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-black text-white focus:ring-2 focus:ring-white focus:border-white"
                     placeholder="Confirm password"
                     required={!isSignIn}
                   />
@@ -200,11 +200,11 @@ export default function TestPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full bg-primary-600 hover:bg-primary-700 disabled:opacity-50 text-white font-medium py-2 px-4 rounded-lg transition duration-200"
+              className="w-full bg-white text-black hover:bg-gray-100 disabled:opacity-50 font-medium py-2 px-4 rounded-lg transition duration-200 border border-border"
             >
               {isLoading 
-                ? (isSignIn ? 'Signing In...' : 'Creating...') 
-                : (isSignIn ? 'Sign In' : 'Create Organization')
+                ? (isSignIn ? 'Connecting to BSC...' : 'Registering on Blockchain...') 
+                : (isSignIn ? 'Connect to Blockchain' : 'Join BSC Network')
               }
             </button>
           </form>
