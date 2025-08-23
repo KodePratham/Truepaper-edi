@@ -103,12 +103,12 @@ export default function TestPage() {
           <div className="text-center mb-8">
             <Building className="w-12 h-12 text-white mx-auto mb-4" />
             <h1 className="text-2xl font-bold mb-2">
-              {isSignIn ? 'Sign In' : 'Create Organization'}
+              {isSignIn ? 'Sign In to BSC Portal' : 'Join Blockchain Network'}
             </h1>
             <p className="text-gray-300">
               {isSignIn 
-                ? 'Sign in to your organization account' 
-                : 'Set up your organization to start issuing certificates'
+                ? 'Access your organization\'s blockchain certificate portal' 
+                : 'Register your organization to start minting certificates on BSC'
               }
             </p>
           </div>
@@ -203,8 +203,8 @@ export default function TestPage() {
               className="w-full bg-white text-black hover:bg-gray-100 disabled:opacity-50 font-medium py-2 px-4 rounded-lg transition duration-200 border border-border"
             >
               {isLoading 
-                ? (isSignIn ? 'Signing In...' : 'Creating...') 
-                : (isSignIn ? 'Sign In' : 'Create Organization')
+                ? (isSignIn ? 'Connecting to BSC...' : 'Registering on Blockchain...') 
+                : (isSignIn ? 'Connect to Blockchain' : 'Join BSC Network')
               }
             </button>
           </form>

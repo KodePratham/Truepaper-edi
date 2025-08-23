@@ -119,10 +119,10 @@ export default function DashboardPage() {
         {/* Welcome Section */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold mb-2">
-            Certificate Dashboard
+            Blockchain Certificate Dashboard
           </h1>
           <p className="text-gray-300">
-            Issue and manage your organization's certificates.
+            Issue and manage your organization's certificates on Binance Smart Chain.
           </p>
         </div>
 
@@ -140,7 +140,7 @@ export default function DashboardPage() {
         {/* Certificate Form */}
         {showForm && (
           <div className="bg-muted rounded-lg shadow-sm border border-border p-6 mb-8">
-            <h2 className="text-xl font-bold mb-4">Issue New Certificate</h2>
+            <h2 className="text-xl font-bold mb-4">Mint New Blockchain Certificate</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-1">
@@ -176,7 +176,7 @@ export default function DashboardPage() {
                   disabled={isLoading}
                   className="bg-white text-black hover:bg-gray-100 disabled:opacity-50 font-medium py-2 px-4 rounded-lg transition duration-200 border border-border"
                 >
-                  {isLoading ? 'Issuing...' : 'Issue Certificate'}
+                  {isLoading ? 'Minting on BSC...' : 'Mint Certificate'}
                 </button>
                 <button
                   type="button"
@@ -200,7 +200,7 @@ export default function DashboardPage() {
         {/* Certificates Table */}
         <div className="bg-muted rounded-lg shadow-sm border border-border">
           <div className="p-6 border-b border-border">
-            <h2 className="text-xl font-bold">Issued Certificates</h2>
+            <h2 className="text-xl font-bold">Blockchain Certificates</h2>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full">
@@ -219,6 +219,9 @@ export default function DashboardPage() {
                     Issue Date
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
+                    Transaction Hash
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -226,7 +229,7 @@ export default function DashboardPage() {
               <tbody className="bg-black divide-y divide-border">
                 {certificates.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center">
+                    <td colSpan={6} className="px-6 py-12 text-center">
                       <FileText className="w-12 h-12 text-gray-700 mx-auto mb-4" />
                       <p className="text-gray-500">No certificates issued yet</p>
                     </td>

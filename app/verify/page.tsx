@@ -75,9 +75,9 @@ export default function VerifyPage() {
                 <Search className="w-12 h-12 text-black" />
               </div>
             </div>
-            <h1 className="text-4xl font-bold mb-4 tracking-tight">Verify Certificate</h1>
+            <h1 className="text-4xl font-bold mb-4 tracking-tight">Verify Blockchain Certificate</h1>
             <p className="text-xl text-gray-300">
-              Enter a certificate ID to verify its authenticity and view details.
+              Enter a certificate ID to verify its authenticity on the Binance Smart Chain blockchain.
             </p>
           </div>
 
@@ -86,7 +86,7 @@ export default function VerifyPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-400 mb-2">
-                  Certificate ID
+                  Certificate ID (Blockchain Hash)
                 </label>
                 <div className="flex space-x-4">
                   <input
@@ -103,7 +103,7 @@ export default function VerifyPage() {
                     className="bg-white text-black hover:bg-gray-100 disabled:opacity-50 font-medium py-3 px-6 rounded-lg transition duration-200 flex items-center space-x-2 border border-border"
                   >
                     <Search className="w-5 h-5" />
-                    <span>{isLoading ? 'Verifying...' : 'Verify'}</span>
+                    <span>{isLoading ? 'Verifying on BSC...' : 'Verify on Blockchain'}</span>
                   </button>
                 </div>
               </div>
@@ -119,8 +119,8 @@ export default function VerifyPage() {
                   <div className="flex items-center space-x-3 mb-6">
                     <CheckCircle className="w-8 h-8 text-green-400" />
                     <div>
-                      <h2 className="text-2xl font-bold">Certificate Verified</h2>
-                      <p className="text-green-400">This certificate is authentic and valid.</p>
+                      <h2 className="text-2xl font-bold">Certificate Verified on Blockchain</h2>
+                      <p className="text-green-400">This certificate is cryptographically verified and immutably stored on BSC.</p>
                     </div>
                   </div>
 
@@ -190,8 +190,8 @@ export default function VerifyPage() {
                   <div className="flex items-center space-x-3 mb-6">
                     <XCircle className="w-8 h-8 text-red-400" />
                     <div>
-                      <h2 className="text-2xl font-bold">Certificate Not Found</h2>
-                      <p className="text-red-400">The certificate ID you entered could not be verified.</p>
+                      <h2 className="text-2xl font-bold">Certificate Not Found on Blockchain</h2>
+                      <p className="text-red-400">The certificate ID could not be verified on the BSC blockchain.</p>
                     </div>
                   </div>
 
