@@ -88,3 +88,9 @@ pids
 # Temporary folders
 tmp/
 temp/
+
+# Hardhat
+cache/
+artifacts/
+typechain/
+typechain-types/
