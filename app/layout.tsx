@@ -1,22 +1,14 @@
-import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
-import './globals.css'
-
-const inter = Inter({ subsets: ['latin'] })
+import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: 'TruePaper - Blockchain Certificates',
-  description: 'Issue tamper-proof digital certificates that can be verified instantly, anywhere in the world.',
-}
+  title: 'TruePaper - Blockchain Certificate Verification',
+  description: 'Issue and verify certificates on BSC blockchain with PDF storage on IPFS',
+};
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={inter.className}>{children}</body>
+      <body style={{ margin: 0, backgroundColor: '#fff' }}>{children}</body>
     </html>
-  )
+  );
 }
