@@ -7,6 +7,7 @@ Blockchain-based certificate verification system built on **BSC Testnet** with P
 - ✅ Issue certificates with person's name and PDF document
 - ✅ Store PDF files on IPFS (up to 100MB)
 - ✅ Verify certificates using certificate ID
+- ✅ **Public Registry**: List all issued certificates
 - ✅ Revoke certificates (issuer/owner only)
 - ✅ Multi-issuer support with authorization
 
@@ -47,6 +48,8 @@ Get testnet BNB from: https://testnet.bnbchain.org/faucet-smart
 npm run compile
 npm run deploy
 ```
+
+> **Note:** If you modify the contract (e.g., adding the registry feature), you must redeploy it. The new logic will only apply to the new contract address.
 
 ### 5. Verify Contract on BSCScan
 

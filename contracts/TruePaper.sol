@@ -12,6 +12,7 @@ contract TruePaper {
     }
 
     mapping(bytes32 => Certificate) public certificates;
+    bytes32[] public allCertificateIds;
     mapping(address => bool) public authorizedIssuers;
     address public owner;
 
@@ -70,6 +71,8 @@ contract TruePaper {
             isRevoked: false
         });
 
+        allCertificateIds.push(certificateId);
+
         emit CertificateIssued(certificateId, _personName, _ipfsHash, msg.sender, block.timestamp);
         return certificateId;
     }
@@ -107,6 +110,10 @@ contract TruePaper {
 
         cert.isRevoked = true;
         emit CertificateRevoked(_certificateId, msg.sender);
+    }
+
+    function getAllCertificateIds() external view returns (bytes32[] memory) {
+        return allCertificateIds;
     }
 
     function getCertificateByHash(bytes32 _certificateId)

@@ -1,7 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import { ethers } from 'ethers';
+import Link from 'next/link';
+import { CHAIN_CONFIG, CONTRACT_ADDRESS } from '@/config/contract';
 
 declare global {
   interface Window {
@@ -9,369 +11,343 @@ declare global {
   }
 }
 
-const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS!;
 const CONTRACT_ABI = [
-  "function issueCertificate(string calldata _personName, string calldata _ipfsHash) external returns (bytes32)",
   "function verifyCertificate(bytes32 _certificateId) external view returns (bool isValid, string memory personName, string memory ipfsHash, address issuer, uint256 timestamp, bool isRevoked)",
-  "function revokeCertificate(bytes32 _certificateId) external",
-  "function authorizeIssuer(address _issuer) external",
-  "function authorizedIssuers(address) external view returns (bool)",
-  "event CertificateIssued(bytes32 indexed certificateId, string personName, string ipfsHash, address indexed issuer, uint256 timestamp)"
 ];
 
-const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
-
 export default function Home() {
-  const [walletAddress, setWalletAddress] = useState('');
-  const [personName, setPersonName] = useState('');
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [verifyId, setVerifyId] = useState('');
-  const [result, setResult] = useState('');
+  const [result, setResult] = useState<any>(null);
   const [loading, setLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  async function connectWallet() {
-    if (typeof window.ethereum === 'undefined') {
-      alert('Please install MetaMask!');
-      return;
-    }
-    try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      
-      // Request to switch to BSC Testnet
-      try {
-        await window.ethereum.request({
-          method: 'wallet_switchEthereumChain',
-          params: [{ chainId: '0x61' }], // 97 in hex
-        });
-      } catch (switchError: any) {
-        // Chain not added, add it
-        if (switchError.code === 4902) {
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [{
-              chainId: '0x61',
-              chainName: 'BSC Testnet',
-              nativeCurrency: { name: 'tBNB', symbol: 'tBNB', decimals: 18 },
-              rpcUrls: ['https://data-seed-prebsc-1-s1.binance.org:8545'],
-              blockExplorerUrls: ['https://testnet.bscscan.com'],
-            }],
-          });
-        }
-      }
-
-      const accounts = await provider.send('eth_requestAccounts', []);
-      setWalletAddress(accounts[0]);
-    } catch (err: any) {
-      alert(`Error connecting: ${err.message}`);
-    }
-  }
-
-  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    if (file.size > MAX_FILE_SIZE) {
-      alert('File size must be under 100MB');
-      return;
-    }
-
-    if (file.type !== 'application/pdf') {
-      alert('Please select a PDF file');
-      return;
-    }
-
-    setSelectedFile(file);
-  }
-
-  async function uploadToPinata(file: File): Promise<string> {
-    const formData = new FormData();
-    formData.append('file', file);
-
-    const metadata = JSON.stringify({
-      name: `TruePaper_${personName}_${Date.now()}`,
-    });
-    formData.append('pinataMetadata', metadata);
-
-    // CHANGED: Point to our local API route instead of Pinata directly
-    const response = await fetch('/api/ipfs', {
-      method: 'POST',
-      body: formData,
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || 'Failed to upload to IPFS');
-    }
-
-    const data = await response.json();
-    return data.IpfsHash;
-  }
-
-  async function issueCertificate() {
-    if (!walletAddress) {
-      alert('Connect wallet first');
-      return;
-    }
-    if (!personName.trim()) {
-      alert('Enter person name');
-      return;
-    }
-    if (!selectedFile) {
-      alert('Select a PDF file');
-      return;
-    }
-
-    setLoading(true);
-    setUploadProgress(0);
-    try {
-      // Upload to Pinata
-      setResult('Uploading PDF to IPFS...');
-      setUploadProgress(30);
-      const ipfsHash = await uploadToPinata(selectedFile);
-      setUploadProgress(60);
-
-      // Issue on blockchain
-      setResult('Issuing certificate on blockchain...');
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, signer);
-
-      const tx = await contract.issueCertificate(personName, ipfsHash);
-      setUploadProgress(80);
-      const receipt = await tx.wait();
-
-      // Get certificate ID from event
-      const event = receipt.logs.find((log: any) => {
-        try {
-          const parsed = contract.interface.parseLog(log);
-          return parsed?.name === 'CertificateIssued';
-        } catch {
-          return false;
-        }
-      });
-
-      let certificateId = '';
-      if (event) {
-        const parsed = contract.interface.parseLog(event);
-        certificateId = parsed?.args[0];
-      }
-
-      setUploadProgress(100);
-      setResult(
-        `✅ Certificate Issued!\n\n` +
-        `Certificate ID: ${certificateId}\n` +
-        `Person: ${personName}\n` +
-        `IPFS Hash: ${ipfsHash}\n` +
-        `PDF Link: https://gateway.pinata.cloud/ipfs/${ipfsHash}\n` +
-        `Transaction: ${tx.hash}\n` +
-        `View on BSCScan: https://testnet.bscscan.com/tx/${tx.hash}`
-      );
-
-      // Reset form
-      setPersonName('');
-      setSelectedFile(null);
-      if (fileInputRef.current) fileInputRef.current.value = '';
-    } catch (err: any) {
-      setResult(`Error: ${err.message}`);
-    }
-    setLoading(false);
-  }
+  const [error, setError] = useState('');
 
   async function verifyCertificate() {
     if (!verifyId.trim()) {
-      alert('Enter certificate ID');
+      setError('Please enter a certificate ID');
       return;
     }
 
     setLoading(true);
+    setError('');
+    setResult(null);
+
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
+      const provider = new ethers.JsonRpcProvider(CHAIN_CONFIG.rpcUrl);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, CONTRACT_ABI, provider);
 
       const [isValid, name, ipfsHash, issuer, timestamp, isRevoked] = 
         await contract.verifyCertificate(verifyId);
 
-      if (isValid) {
+      if (timestamp > 0) {
         const date = new Date(Number(timestamp) * 1000).toLocaleString();
-        setResult(
-          `✅ VALID CERTIFICATE\n\n` +
-          `Person: ${name}\n` +
-          `Issuer: ${issuer}\n` +
-          `Issued: ${date}\n` +
-          `IPFS Hash: ${ipfsHash}\n` +
-          `PDF Link: https://gateway.pinata.cloud/ipfs/${ipfsHash}\n` +
-          `Revoked: ${isRevoked ? 'Yes' : 'No'}`
-        );
+        setResult({
+          isValid: isValid && !isRevoked,
+          personName: name,
+          ipfsHash,
+          issuer,
+          date,
+          isRevoked,
+        });
       } else {
-        setResult('❌ Certificate not found or invalid');
+        setError('Certificate not found');
       }
     } catch (err: any) {
-      setResult(`Error: ${err.message}`);
+      setError('Certificate not found or invalid ID format');
     }
     setLoading(false);
   }
 
+  function handleKeyPress(e: React.KeyboardEvent) {
+    if (e.key === 'Enter') {
+      verifyCertificate();
+    }
+  }
+
   return (
     <main style={styles.main}>
-      <h1 style={styles.title}>📜 TruePaper</h1>
-      <p style={styles.subtitle}>Blockchain Certificate Verification on BSC Testnet</p>
+      <nav style={styles.navbar}>
+        <div style={styles.navContent}>
+          <div style={styles.navLeft}>
+            <span style={styles.brand}>TruePaper</span>
+            <Link href="/certificates-xyz" style={styles.navLink}>
+              Registry
+            </Link>
+          </div>
+          <span style={styles.badge}>BSC Testnet</span>
+        </div>
+      </nav>
 
-      <button onClick={connectWallet} style={styles.connectBtn}>
-        {walletAddress 
-          ? `🔗 ${walletAddress.slice(0, 6)}...${walletAddress.slice(-4)}` 
-          : '🦊 Connect MetaMask'}
-      </button>
+      <div style={styles.container}>
+        <div style={styles.card}>
+          <h1 style={styles.title}>Certificate Verification</h1>
+          <p style={styles.subtitle}>Verify the authenticity of blockchain-issued documents.</p>
 
-      <section style={styles.section}>
-        <h2>📝 Issue Certificate</h2>
-        <input
-          placeholder="Person's Full Name"
-          value={personName}
-          onChange={(e) => setPersonName(e.target.value)}
-          style={styles.input}
-        />
-        <div style={styles.fileUpload}>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf"
-            onChange={handleFileSelect}
-            style={styles.fileInput}
-          />
-          {selectedFile && (
-            <p style={styles.fileName}>
-              📄 {selectedFile.name} ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-            </p>
+          <div style={styles.searchContainer}>
+            <input
+              placeholder="Enter Certificate ID (e.g., 0x123...)"
+              value={verifyId}
+              onChange={(e) => setVerifyId(e.target.value)}
+              onKeyPress={handleKeyPress}
+              style={styles.searchInput}
+            />
+            <button onClick={verifyCertificate} disabled={loading} style={styles.searchButton}>
+              {loading ? 'Verifying...' : 'Verify'}
+            </button>
+          </div>
+
+          {error && (
+            <div style={styles.errorBox}>
+              <p style={styles.errorMessage}>⚠️ {error}</p>
+            </div>
+          )}
+
+          {result && (
+            <div style={result.isValid ? styles.validBox : styles.invalidBox}>
+              <div style={styles.statusHeader}>
+                <span style={styles.statusIcon}>{result.isValid ? '✓' : '✕'}</span>
+                <h3 style={styles.statusTitle}>{result.isValid ? 'Valid Certificate' : 'Invalid Certificate'}</h3>
+              </div>
+              
+              <div style={styles.resultDetails}>
+                <div style={styles.detailRow}>
+                  <span style={styles.label}>Recipient</span>
+                  <span style={styles.value}>{result.personName}</span>
+                </div>
+                <div style={styles.detailRow}>
+                  <span style={styles.label}>Issued Date</span>
+                  <span style={styles.value}>{result.date}</span>
+                </div>
+                <div style={styles.detailRow}>
+                  <span style={styles.label}>Issuer</span>
+                  <span style={styles.valueMono}>{result.issuer}</span>
+                </div>
+                
+                {result.isRevoked && <div style={styles.revokedBanner}>⚠️ This certificate has been revoked by the issuer.</div>}
+                
+                <a 
+                  href={`https://gateway.pinata.cloud/ipfs/${result.ipfsHash}`} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  style={styles.pdfButton}
+                >
+                  View Original Document
+                </a>
+              </div>
+            </div>
           )}
         </div>
-        {uploadProgress > 0 && uploadProgress < 100 && (
-          <div style={styles.progressBar}>
-            <div style={{ ...styles.progress, width: `${uploadProgress}%` }} />
-          </div>
-        )}
-        <button onClick={issueCertificate} disabled={loading} style={styles.button}>
-          {loading ? '⏳ Processing...' : '🎓 Issue Certificate'}
-        </button>
-      </section>
 
-      <section style={styles.section}>
-        <h2>🔍 Verify Certificate</h2>
-        <input
-          placeholder="Certificate ID (0x...)"
-          value={verifyId}
-          onChange={(e) => setVerifyId(e.target.value)}
-          style={styles.input}
-        />
-        <button onClick={verifyCertificate} disabled={loading} style={styles.button}>
-          {loading ? '⏳ Verifying...' : '✅ Verify'}
-        </button>
-      </section>
-
-      {result && (
-        <pre style={styles.result}>{result}</pre>
-      )}
-
-      <footer style={styles.footer}>
-        <p>Network: BSC Testnet (Chain ID: 97)</p>
-        <p>Get test BNB: <a href="https://testnet.bnbchain.org/faucet-smart" target="_blank" rel="noopener">BSC Faucet</a></p>
-      </footer>
+        <footer style={styles.footer}>
+          <p>Secured by Binance Smart Chain (Testnet)</p>
+        </footer>
+      </div>
     </main>
   );
 }
 
 const styles: { [key: string]: React.CSSProperties } = {
   main: {
-    padding: '2rem',
-    maxWidth: '700px',
+    minHeight: '100vh',
+    display: 'flex',
+    flexDirection: 'column',
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+    backgroundColor: '#f8fafc',
+    color: '#1e293b',
+  },
+  navbar: {
+    backgroundColor: '#ffffff',
+    borderBottom: '1px solid #e2e8f0',
+    padding: '1rem 0',
+  },
+  navContent: {
+    maxWidth: '800px',
     margin: '0 auto',
-    fontFamily: 'system-ui, sans-serif',
+    padding: '0 1.5rem',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  navLeft: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '2rem',
+  },
+  navLink: {
+    fontSize: '0.95rem',
+    fontWeight: '600',
+    color: '#64748b',
+    textDecoration: 'none',
+    transition: 'color 0.2s',
+  },
+  brand: {
+    fontSize: '1.25rem',
+    fontWeight: '700',
+    color: '#0f172a',
+    letterSpacing: '-0.025em',
+  },
+  badge: {
+    fontSize: '0.75rem',
+    fontWeight: '600',
+    backgroundColor: '#F0B90B',
+    color: '#000',
+    padding: '0.25rem 0.75rem',
+    borderRadius: '9999px',
+  },
+  container: {
+    flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '2rem 1rem',
+  },
+  card: {
+    backgroundColor: '#ffffff',
+    borderRadius: '16px',
+    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+    padding: '2.5rem',
+    maxWidth: '600px',
+    width: '100%',
+    textAlign: 'center',
   },
   title: {
-    fontSize: '2.5rem',
-    marginBottom: '0.5rem',
-    textAlign: 'center',
+    fontSize: '1.875rem',
+    fontWeight: '800',
+    marginBottom: '0.75rem',
+    color: '#0f172a',
+    letterSpacing: '-0.025em',
   },
   subtitle: {
-    textAlign: 'center',
-    color: '#666',
+    color: '#64748b',
+    marginBottom: '2.5rem',
+    fontSize: '1rem',
+    lineHeight: '1.5',
+  },
+  searchContainer: {
+    display: 'flex',
+    gap: '0.75rem',
     marginBottom: '2rem',
   },
-  connectBtn: {
-    display: 'block',
-    width: '100%',
-    padding: '1rem',
-    fontSize: '1.1rem',
-    backgroundColor: '#f0b90b',
-    border: 'none',
+  searchInput: {
+    flex: 1,
+    padding: '0.875rem 1rem',
+    fontSize: '1rem',
+    border: '1px solid #cbd5e1',
     borderRadius: '8px',
-    cursor: 'pointer',
-    marginBottom: '2rem',
+    outline: 'none',
+    transition: 'all 0.2s',
+    backgroundColor: '#f8fafc',
+    fontFamily: 'monospace',
   },
-  section: {
-    marginBottom: '2rem',
-    padding: '1.5rem',
-    border: '1px solid #ddd',
-    borderRadius: '12px',
-    backgroundColor: '#fafafa',
-  },
-  input: {
-    width: '100%',
-    padding: '0.75rem',
-    marginBottom: '1rem',
-    border: '1px solid #ccc',
-    borderRadius: '6px',
+  searchButton: {
+    padding: '0.875rem 1.5rem',
     fontSize: '1rem',
-    boxSizing: 'border-box',
-  },
-  fileUpload: {
-    marginBottom: '1rem',
-  },
-  fileInput: {
-    width: '100%',
-    padding: '0.5rem',
-  },
-  fileName: {
-    marginTop: '0.5rem',
-    color: '#333',
-  },
-  progressBar: {
-    width: '100%',
-    height: '8px',
-    backgroundColor: '#eee',
-    borderRadius: '4px',
-    marginBottom: '1rem',
-    overflow: 'hidden',
-  },
-  progress: {
-    height: '100%',
-    backgroundColor: '#f0b90b',
-    transition: 'width 0.3s',
-  },
-  button: {
-    width: '100%',
-    padding: '0.75rem',
-    fontSize: '1rem',
-    backgroundColor: '#333',
+    fontWeight: '600',
+    backgroundColor: '#0f172a',
     color: '#fff',
     border: 'none',
-    borderRadius: '6px',
-    cursor: 'pointer',
-  },
-  result: {
-    background: '#f5f5f5',
-    padding: '1rem',
     borderRadius: '8px',
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'break-all',
+    cursor: 'pointer',
+    transition: 'background-color 0.2s',
+  },
+  errorBox: {
+    padding: '1rem',
+    backgroundColor: '#fef2f2',
+    border: '1px solid #fee2e2',
+    borderRadius: '8px',
+    color: '#991b1b',
+    marginBottom: '1.5rem',
+    textAlign: 'left',
+  },
+  errorMessage: {
+    margin: 0,
     fontSize: '0.9rem',
-    lineHeight: '1.6',
+  },
+  validBox: {
+    border: '1px solid #bbf7d0',
+    backgroundColor: '#f0fdf4',
+    borderRadius: '12px',
+    overflow: 'hidden',
+  },
+  invalidBox: {
+    border: '1px solid #fecaca',
+    backgroundColor: '#fef2f2',
+    borderRadius: '12px',
+    overflow: 'hidden',
+  },
+  statusHeader: {
+    padding: '1rem 1.5rem',
+    borderBottom: '1px solid rgba(0,0,0,0.05)',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '0.75rem',
+    backgroundColor: 'rgba(255,255,255,0.5)',
+  },
+  statusIcon: {
+    fontSize: '1.25rem',
+    fontWeight: 'bold',
+  },
+  statusTitle: {
+    margin: 0,
+    fontSize: '1.1rem',
+    fontWeight: '600',
+  },
+  resultDetails: {
+    padding: '1.5rem',
+    textAlign: 'left',
+  },
+  detailRow: {
+    marginBottom: '1rem',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '0.25rem',
+  },
+  label: {
+    fontSize: '0.75rem',
+    textTransform: 'uppercase',
+    letterSpacing: '0.05em',
+    color: '#64748b',
+    fontWeight: '600',
+  },
+  value: {
+    fontSize: '1rem',
+    color: '#0f172a',
+    fontWeight: '500',
+  },
+  valueMono: {
+    fontSize: '0.9rem',
+    color: '#334155',
+    fontFamily: 'monospace',
+    wordBreak: 'break-all',
+  },
+  revokedBanner: {
+    backgroundColor: '#fee2e2',
+    color: '#991b1b',
+    padding: '0.75rem',
+    borderRadius: '6px',
+    fontSize: '0.875rem',
+    fontWeight: '600',
+    marginBottom: '1rem',
+    textAlign: 'center',
+  },
+  pdfButton: {
+    display: 'block',
+    width: '100%',
+    marginTop: '1.5rem',
+    padding: '0.75rem',
+    backgroundColor: '#ffffff',
+    color: '#0f172a',
+    textDecoration: 'none',
+    borderRadius: '6px',
+    border: '1px solid #cbd5e1',
+    textAlign: 'center',
+    fontWeight: '600',
+    fontSize: '0.9rem',
+    transition: 'background-color 0.2s',
   },
   footer: {
-    textAlign: 'center',
-    marginTop: '2rem',
-    color: '#666',
-    fontSize: '0.9rem',
+    marginTop: '3rem',
+    color: '#94a3b8',
+    fontSize: '0.875rem',
   },
 };
